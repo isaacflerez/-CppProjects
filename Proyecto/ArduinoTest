@@ -1,0 +1,58 @@
+#include <Servo.h>
+
+Servo servoX;
+Servo servoY;
+Servo servoZ;
+
+void setup() {
+  Serial.begin(9600);
+  servoX.attach(6);
+  servoY.attach(7);
+  servoZ.attach(8);
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    String input = Serial.readStringUntil('\n');
+
+    int comaIndex1 = input.indexOf(',');
+    int comaIndex2 = input.lastIndexOf(',');
+
+    if (comaIndex1 != -1 && comaIndex2 != -1) {
+      int gradosServoX = input.substring(0, comaIndex1).toInt();
+      int gradosServoY = input.substring(comaIndex1 + 1, comaIndex2).toInt();
+      int gradosServoZ = input.substring(comaIndex2 + 1).toInt();
+
+      if (gradosServoX >= 0 && gradosServoX <= 180 && gradosServoY >= 0 && gradosServoY <= 180 && gradosServoZ >= 0 && gradosServoZ <= 180) {
+        moverSuave(servoX, gradosServoX);
+        moverSuave(servoY, gradosServoY);
+        moverSuave(servoZ, gradosServoZ);
+      } else {
+        Serial.println("Ingresa valores válidos para los servos (entre 0 y 180).");
+      }
+    }
+  }
+  delay(15);
+}
+
+void moverSuave(Servo servo, int objetivo) {
+  int paso = 1;
+  int actual = servo.read();
+
+  while (actual != objetivo) {
+    if (actual < objetivo) {
+      actual += paso;
+      if (actual > objetivo) {
+        actual = objetivo;
+      }
+    } else {
+      actual -= paso;
+      if (actual < objetivo) {
+        actual = objetivo;
+      }
+    }
+
+    servo.write(actual);
+    delay(15);
+  }
+}
